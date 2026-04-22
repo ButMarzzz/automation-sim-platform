@@ -4,10 +4,13 @@ from sensors import RPM as rpm_sensor
 from sensors import temp
 from sensors import voltage
 from engine_state import EngineState
-
+import fault_check
+from sensors import pressure
+from logger import init_logger, log_data
 
 def main():
-    
+
+    log_file, writer = init_logger()
     init_time = time.time()
     eng_status = EngineState.OFF
     time_in_state = 0
@@ -28,30 +31,45 @@ def main():
             )
 
             print(f"\n--- Engine status changed to: {eng_status} ---\n")
-            previous_status = eng_status 
             time_in_state = 0
 
         if eng_status == EngineState.OFF and curr_time > 8:
             break
         
-        time_in_state += 0.5  # Increment time_in_state by 0.5 seconds (the sleep interval)
-        
         # 1. read sensors
-        #temp_data = temp.get_data(init_time, curr_time, eng_status)
-        voltage_data = voltage.get_data(init_time, curr_time, eng_status)
-        rpm_data  = rpm_sensor.get_data(init_time, curr_time, eng_status, just_started)
+        voltage_data = voltage.get_data(curr_time, eng_status, previous_status, time_in_state)
+        rpm_data  = rpm_sensor.get_data(curr_time, eng_status, just_started)
+        temp_data = temp.get_data(curr_time, eng_status)
+        pressure_data = pressure.get_data(curr_time, eng_status, rpm_data['value'], temp_data['value'])
         
+        # log data
+        log_data(
+            writer,
+            curr_time,
+            eng_status,
+            rpm_data["value"],
+            voltage_data["value"],
+            temp_data["value"],
+            pressure_data["value"]
+        )
+
         # 2. check faults
-        '''temp_checked = fault_check.check_temp(temp_data)
+        temp_checked = fault_check.check_temp(temp_data)
         rpm_checked  = fault_check.check_rpm(rpm_data)
         voltage_checked = fault_check.check_voltage(voltage_data)
+        pressure_checked = fault_check.check_pressure(pressure_data)
 
         # 3. print results
         fault_check.print_temp(temp_checked)
         fault_check.print_rpm(rpm_checked)
-        fault_check.print_voltage(voltage_checked)'''
-
+        fault_check.print_voltage(voltage_checked)
+        fault_check.print_pressure(pressure_checked)
+        
+        previous_status = eng_status
+        time_in_state += 0.5  # Increment time_in_state by 0.5 seconds (the sleep interval)
         time.sleep(0.5)
+    
+    log_file.close()
 
 
 def update_engine_state(time_in_state, current_state, total_time):

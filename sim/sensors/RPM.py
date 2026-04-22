@@ -5,7 +5,7 @@ from engine_state import EngineState
 
 _current_rpm = 0
 
-def get_data(init_time, curr_time, eng_status, just_started):
+def get_data(curr_time, eng_status, just_started):
 
     global _current_rpm
 
@@ -13,7 +13,7 @@ def get_data(init_time, curr_time, eng_status, just_started):
 
     # target RPM depending on engine state
     if eng_status == EngineState.OFF:
-        target = 0
+        _current_rpm = 0
 
     elif eng_status == EngineState.CRANKING:
         target = random.uniform(250, 400)
@@ -26,7 +26,7 @@ def get_data(init_time, curr_time, eng_status, just_started):
 
     elif eng_status == EngineState.REV:
         target = random.uniform(4000, 6000)
-        ramp = 0.1  # Revving is more aggressive, so we use a faster ramp
+        ramp = 0.5  # Revving is more aggressive, so we use a faster ramp
 
     else:
         target = 0
@@ -45,5 +45,5 @@ def get_data(init_time, curr_time, eng_status, just_started):
 
     return {
         'timestamp': curr_time,
-        'rpm': _current_rpm 
+        'value': _current_rpm 
     }
