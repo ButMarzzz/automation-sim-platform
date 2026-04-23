@@ -14,6 +14,7 @@ def get_data(curr_time, eng_status, just_started):
     # target RPM depending on engine state
     if eng_status == EngineState.OFF:
         _current_rpm = 0
+        target = 0
 
     elif eng_status == EngineState.CRANKING:
         target = random.uniform(250, 400)

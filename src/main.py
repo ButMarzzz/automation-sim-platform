@@ -4,13 +4,13 @@ from sensors import RPM as rpm_sensor
 from sensors import temp
 from sensors import voltage
 from engine_state import EngineState
-import fault_check
+from diag import fault_check
 from sensors import pressure
-from logger import init_logger, log_data
+from utils import logger
 
 def main():
 
-    log_file, writer = init_logger()
+    log_file, writer = logger.init_logger()
     init_time = time.time()
     eng_status = EngineState.OFF
     time_in_state = 0
@@ -43,7 +43,7 @@ def main():
         pressure_data = pressure.get_data(curr_time, eng_status, rpm_data['value'], temp_data['value'])
         
         # log data
-        log_data(
+        logger.log_data(
             writer,
             curr_time,
             eng_status,
