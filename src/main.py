@@ -26,12 +26,17 @@ def main():
 
         
         if eng_status != previous_status:
+            time_in_state = 0
+            
             just_started = (
-            previous_status == EngineState.CRANKING and eng_status != EngineState.OFF and time_in_state < 1.0
+            previous_status == EngineState.CRANKING and eng_status != EngineState.OFF
             )
 
             print(f"\n--- Engine status changed to: {eng_status} ---\n")
-            time_in_state = 0
+
+        if just_started == True and time_in_state >= 0.5:
+            just_started = False 
+
 
         if eng_status == EngineState.OFF and curr_time > 8:
             break

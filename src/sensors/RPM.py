@@ -21,7 +21,7 @@ def get_data(curr_time, eng_status, just_started):
 
     elif eng_status == EngineState.IDLE:
         target = random.uniform(700, 900)
-
+        ramp = 0.3
     elif eng_status == EngineState.RUNNING:
         target = random.uniform(1800, 3200)
 
@@ -33,7 +33,7 @@ def get_data(curr_time, eng_status, just_started):
         target = 0
 
     if just_started:
-        _current_rpm += random.uniform(300, 600)
+        _current_rpm += random.uniform(300, 500)
 
     # smooth ramp (no instant jump)
     _current_rpm += (target - _current_rpm) * ramp

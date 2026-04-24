@@ -11,7 +11,8 @@ def get_data(curr_time, eng_status, rpm, temp):
 
     if eng_status == EngineState.OFF:
         target_pressure = 0.0  # No pressure when engine is off
-
+        _current_pressure = 0
+        
     if _current_pressure < 0:
         _current_pressure = 0
     
