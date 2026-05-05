@@ -13,6 +13,9 @@ print(df.head())
 
 # Example: plot one column vs another
 plt.plot(df["time"], df["temp"], label="Temp(F)")
+plt.plot(df["time"], df["rpm"], label="rpm")
+plt.plot(df["time"], df["voltage"], label="voltage(V)")
+plt.plot(df["time"], df["pressure"], label="pressure(F/A)")
 
 plt.xlabel("Time(seconds)")
 plt.ylabel("value")
