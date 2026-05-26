@@ -45,7 +45,7 @@ def get_data(curr_time, eng_status, prev_status, time_in_state):
             ramp = 0.25  # Jumps quickly to target when running
     
     elif eng_status == EngineState.REV:
-        target_voltage = 14.5  # Slightly higher voltage when revving
+        target_voltage = 14.4  # Slightly higher voltage when revving
         ramp = 0.5  # Very fast ramp during revving
         
 

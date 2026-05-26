@@ -4,9 +4,12 @@ from sensors import RPM as rpm_sensor
 from sensors import temp
 from sensors import voltage
 from engine_state import EngineState
-from diag import fault_check
+from faults import fault_check
 from sensors import pressure
 from utils import logger
+from faults.fault_injector import update_faults, apply_faults
+from diagnostics.evaluator import evaluate_all
+from diagnostics.rules import diagnose
 
 def main():
 
@@ -21,13 +24,13 @@ def main():
     
     while True:
         curr_time = time.time() - init_time
-        
+
         eng_status = update_engine_state(time_in_state, eng_status, curr_time)
 
-        
+
         if eng_status != previous_status:
             time_in_state = 0
-            
+
             just_started = (
             previous_status == EngineState.CRANKING and eng_status != EngineState.OFF
             )
@@ -40,23 +43,39 @@ def main():
 
         if eng_status == EngineState.OFF and curr_time > 8:
             break
-        
+       
         # 1. read sensors
         voltage_data = voltage.get_data(curr_time, eng_status, previous_status, time_in_state)
         rpm_data  = rpm_sensor.get_data(curr_time, eng_status, just_started)
         temp_data = temp.get_data(curr_time, eng_status)
         pressure_data = pressure.get_data(curr_time, eng_status, rpm_data['value'], temp_data['value'])
-        
+
+        sensor_data = {
+            "temp": temp_data["value"],
+            "pressure": pressure_data["value"],
+            "voltage": voltage_data["value"],
+            "rpm": rpm_data["value"]
+        }
+
+        # 2. Inject faults
+        faults = update_faults(curr_time)
+        sensor_data = apply_faults(sensor_data, faults)
+
+        # 3. Evaluate status
+        status = evaluate_all(sensor_data)
+
+        # 4. Diagnose
+        issues = diagnose(status, sensor_data)
+
         # log data
         logger.log_data(
             writer,
             curr_time,
             eng_status,
-            rpm_data["value"],
-            voltage_data["value"],
-            temp_data["value"],
-            pressure_data["value"]
+            sensor_data,
+            issues
         )
+        print(issues)
 
         # 2. check faults
         temp_checked = fault_check.check_temp(temp_data)
@@ -69,11 +88,11 @@ def main():
         fault_check.print_rpm(rpm_checked)
         fault_check.print_voltage(voltage_checked)
         fault_check.print_pressure(pressure_checked)
-        
+ 
         previous_status = eng_status
-        time_in_state += 0.5  # Increment time_in_state by 0.5 seconds (the sleep interval)
-        time.sleep(0.5)
-    
+        time_in_state += 0.50  # Increment time_in_state by 0.5 seconds (the sleep interval)
+        time.sleep(0.50)
+
     log_file.close()
 
 

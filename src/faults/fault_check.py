@@ -1,4 +1,3 @@
-
 TEMP_LOW = 15.0
 TEMP_HIGH = 100.0
 

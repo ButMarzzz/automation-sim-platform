@@ -38,8 +38,9 @@ def get_data(curr_time, eng_status, just_started):
     # smooth ramp (no instant jump)
     _current_rpm += (target - _current_rpm) * ramp
 
-    # small vibration noise
-    _current_rpm += random.uniform(-20, 20)
+    if eng_status != EngineState.OFF:
+        # small vibration noise
+        _current_rpm += random.uniform(-20, 20)
 
     if _current_rpm < 0:
         _current_rpm = 0
