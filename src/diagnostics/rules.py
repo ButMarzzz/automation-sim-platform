@@ -20,7 +20,4 @@ def diagnose(status, sensor_data):
     if pressure == "LOW" and rpm == "HIGH":
         issues.append("Oil starvation under load")
     
-    issues.append("test your chicken")
-    
-
     return issues
