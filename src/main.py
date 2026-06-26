@@ -14,9 +14,14 @@ from diagnostics.rules import diagnose
 def main():
 
     log_file, writer = logger.init_logger()
+
     init_time = time.time()
-    eng_status = EngineState.OFF
+    time_in_state_init = init_time
     time_in_state = 0
+
+    faults = dict()
+
+    eng_status = EngineState.OFF
     previous_status = eng_status
     just_started = False
 
@@ -27,9 +32,10 @@ def main():
 
         eng_status = update_engine_state(time_in_state, eng_status, curr_time)
 
+        state_changed = eng_status != previous_status
 
-        if eng_status != previous_status:
-            time_in_state = 0
+        if state_changed:
+            time_in_state_init = time.time()
 
             just_started = (
             previous_status == EngineState.CRANKING and eng_status != EngineState.OFF
@@ -37,7 +43,7 @@ def main():
 
             print(f"\n--- Engine status changed to: {eng_status} ---\n")
 
-        if just_started == True and time_in_state >= 0.5:
+        if just_started and time_in_state >= 0.5:
             just_started = False 
 
 
@@ -58,15 +64,25 @@ def main():
         }
 
         # 2. Inject faults
-        faults = update_faults(curr_time)
+        update_faults(curr_time, time_in_state, faults)
         sensor_data = apply_faults(sensor_data, faults)
 
         # 3. Evaluate status
         status = evaluate_all(sensor_data)
 
+        # for sensor in status:
+        #     print(sensor, ":" ,status[sensor])
+
         # 4. Diagnose
         issues = diagnose(status, sensor_data)
 
+        simulation_state = {
+            "engine_state": eng_status,
+            "time_in_state": time_in_state,
+            "sensors": sensor_data,
+            "faults": faults,
+            "issues": issues
+        }
         # log data
         logger.log_data(
             writer,
@@ -78,19 +94,24 @@ def main():
         print(issues)
 
         # 2. check faults
-        temp_checked = fault_check.check_temp(temp_data)
-        rpm_checked  = fault_check.check_rpm(rpm_data)
-        voltage_checked = fault_check.check_voltage(voltage_data)
-        pressure_checked = fault_check.check_pressure(pressure_data)
+        # if eng_status != EngineState.OFF and just_started != True:
+        #     temp_checked = fault_check.check_temp(sensor_data["temp"])
+        #     rpm_checked  = fault_check.check_rpm(sensor_data["rpm"])
+        #     voltage_checked = fault_check.check_voltage(sensor_data["voltage"])
+        #     pressure_checked = fault_check.check_pressure(sensor_data["pressure"])
 
-        # 3. print results
-        fault_check.print_temp(temp_checked)
-        fault_check.print_rpm(rpm_checked)
-        fault_check.print_voltage(voltage_checked)
-        fault_check.print_pressure(pressure_checked)
+        #     # 3. print results
+        #     fault_check.print_temp(temp_checked)
+        #     fault_check.print_rpm(rpm_checked)
+        #     fault_check.print_voltage(voltage_checked)
+        #     fault_check.print_pressure(pressure_checked)
+        
  
         previous_status = eng_status
-        time_in_state += 0.50  # Increment time_in_state by 0.5 seconds (the sleep interval)
+        time_in_state = time.time() - time_in_state_init  # Increment time_in_state by 0.5 seconds (the sleep interval)
+        print(time_in_state)
+
+        print(curr_time)
         time.sleep(0.50)
 
     log_file.close()
