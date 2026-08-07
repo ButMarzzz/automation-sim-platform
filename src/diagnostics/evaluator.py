@@ -1,10 +1,10 @@
-from diagnostics.thresholds import *
+from diagnostics import thresholds
 
 SENSOR_LIMITS = {
-    "temp": (TEMP_LOW, TEMP_HIGH),
-    "voltage": (VOLT_LOW, VOLT_HIGH),
-    "rpm": (RPM_LOW, RPM_HIGH),
-    "pressure": (PRESS_LOW, PRESS_HIGH),
+    "temp": (thresholds.TEMP_LOW, thresholds.TEMP_HIGH),
+    "voltage": (thresholds.VOLT_LOW, thresholds.VOLT_HIGH),
+    "rpm": (thresholds.RPM_LOW, thresholds.RPM_HIGH),
+    "pressure": (thresholds.PRESS_LOW, thresholds.PRESS_HIGH),
 }
 
 def check_range(value, low, high):
@@ -23,9 +23,9 @@ def evaluate_sensor(name, value):
 
 
 def evaluate_all(sensor_data):
-    status = {}
+    sensor_status = {}
 
     for name, value in sensor_data.items():
-        status[name] = evaluate_sensor(name, value)
+        sensor_status[name] = evaluate_sensor(name, value)
 
-    return status
+    return sensor_status

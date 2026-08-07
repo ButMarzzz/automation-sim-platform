@@ -64,14 +64,14 @@ def main():
         }
 
         # 2. Inject faults
-        update_faults(curr_time, time_in_state, faults)
+        update_faults(curr_time, faults)
         sensor_data = apply_faults(sensor_data, faults)
 
         # 3. Evaluate status
         status = evaluate_all(sensor_data)
 
-        # for sensor in status:
-        #     print(sensor, ":" ,status[sensor])
+        for sensor in status:
+             print(sensor, ":" ,status[sensor])
 
         # 4. Diagnose
         issues = diagnose(status, sensor_data)

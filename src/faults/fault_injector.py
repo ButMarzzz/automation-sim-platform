@@ -1,7 +1,7 @@
 from faults.fault_types import FaultType
 import random
 
-def update_faults(time, time_in_state, active_faults):
+def update_faults(time, active_faults):
     if random.random() < 0.80 and FaultType.OVERHEATING not in active_faults:
         active_faults[FaultType.OVERHEATING] = {
             "start_time": time,
@@ -21,12 +21,12 @@ def update_faults(time, time_in_state, active_faults):
         }
     
     for fault, info in list(active_faults.items()):
-        if time > info["end_time"]:
+        if time > info["endtime"]:
             del active_faults[fault]
 
 
 
-def apply_faults(sensor_data, faults, time):
+def apply_faults(sensor_data, faults):
     if FaultType.OVERHEATING in faults:
         sensor_data["temp"] += 30
 
@@ -40,6 +40,15 @@ def apply_faults(sensor_data, faults, time):
 
     if FaultType.TEMP_SENSOR_FAILURE in faults:
         sensor_data["temp"] = None
+    
+    if FaultType.RPM_SENSOR_FAILURE in faults:
+        sensor_data["rpm"] = None
+    
+    if FaultType.VOLTAGE_SENSOR_FAILURE in faults:
+        sensor_data["voltage"] = None
+
+    if FaultType.PRESSURE_SENSOR_FAILURE in faults:
+        sensor_data["pressure"] = None
 
     if FaultType.VOLTAGE_ZERO in faults:
         sensor_data["voltage"] = 0

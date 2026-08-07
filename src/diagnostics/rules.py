@@ -6,6 +6,12 @@ def diagnose(status, sensor_data):
     voltage = status["voltage"]
     rpm = status["rpm"]
 
+    missing_sensors = [
+    name
+    for name, value in status.items()
+    if value == "INVALID"
+    ]
+
     # Example rules
 
     if temp == "HIGH" and pressure == "LOW":
@@ -20,4 +26,11 @@ def diagnose(status, sensor_data):
     if pressure == "LOW" and rpm == "HIGH":
         issues.append("Oil starvation under load")
     
+    if missing_sensors:
+        issues.append(
+            f"Sensor error: Not Reading ({', '.join(missing_sensors)})"
+        )
+    if not issues:
+        issues.append("No faults detected")
+
     return issues
