@@ -64,7 +64,7 @@ def main():
         }
 
         # 2. Inject faults
-        update_faults(curr_time, faults)
+        update_faults(curr_time, faults, eng_status)
         sensor_data = apply_faults(sensor_data, faults)
 
         # 3. Evaluate status
