@@ -7,14 +7,14 @@ log_path = BASE_DIR / "logs" / "engine_data.csv"
 
 df = pd.read_csv(log_path)
 
-# print(df.head())      # first 5 rows
-# print(df.tail())      # last 5 rows
+print(df.head())      # first 5 rows
+print(df.tail())      # last 5 rows
 
 # print(df.columns)
 
-# print(df.info())
+print(df.info())
 
-# print(df.describe())
+print(df.describe())
 
 # rev = df[df["state"] == "REV"]
 
@@ -41,7 +41,7 @@ df = pd.read_csv(log_path)
 # print(df["state"].value_counts())
 # print(df["state"].nlargest(5))
 # print(df["state"].sort_values("time"))
-# print(df[df["fault"] != "No faults detected"].value_counts())
+# print(df[df["issues"] != "No faults detected"].value_counts())
 # print(df["voltage"].sort_values(ascending=False).head(5))
 
 # print(df[df["state"] == "RUNNING"]["rpm"].mean())
@@ -73,12 +73,36 @@ df["warm"] = (df["temp"] > 90) & (df["temp"]<110)
 print(df[df["overheating"] == True].value_counts())
 # faults = df[df["issues"] != "No faults detected"]
 
-#Level 5 - Time Series Thinking
-#17. How long did the engine spend above 100°C?
+# Time Series Thinking
+# How long did the engine spend above 100°C?
 hot = df[df["temp"]>100]
-print(hot["time"].diff().sum())
+print(hot["time"].sum())
 
+# At what time did the engine first exceed 5000 RPM?
+high_rpm = df[df["rpm"] > 5000]
+print(high_rpm["time"].iloc[0]) # or use .min() to get the first time
+
+#.How long after starting did the cooling issue first appear?
+start_time = df[df["state"] == "IDLE"]["time"].iloc[0]
+cooling_issue_time = df[df["issues"] == "Cooling system issue"]["time"].iloc[0]
+time_after_start = cooling_issue_time - start_time
+print(f"Time after start: {time_after_start}")
+
+df["previous_state"] = df["state"].shift(1)
+df["change_state"] = df["state"] != df["previous_state"]
+
+df["group"] = df["change_state"].cumsum()
+print(df.groupby)
+duration = df[df["state"]=="REV"].groupby("group").agg(
+    start_time=("time", "min"),
+    end_time=("time", "max"),
+    duration=("time", lambda x: x.max() - x.min())
+)
+
+print(duration["duration"].max())
+#print(df[df["change_state"] == True])
 # print(faults)
+
 
 # plt.plot(df["time"], df["rpm"])
 # plt.xlabel("Time")
